@@ -20,6 +20,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
 
+  <script src="https://kit.fontawesome.com/eefbfa2a22.js" crossorigin="anonymous"></script>
+
   <title>Digital Delivery Tool - ACC TIDP Creator/Uploader</title>
 </head>
 <header>
@@ -44,24 +46,30 @@
   </div>
 <div class="form-container">
   <h3 class="containerH2">Do you have a TIDP Template already or need to generate one?</h3>
-  <input type="radio" id="new" name="startType" value="existing">
-  <label for="html">I have a populated Template</label>
+  <div>
+    <input type="radio" id="new" name="startType" value="existing">
+    <label for="html">I have a populated Template</label>
+  </div>
+<div>
   <input type="radio" id="existing" name="startType" value="new">
   <label for="css">I need a Template generated</label>
 </div>
 
+</div>
+
 <div class="form-container nodisplay" id="newForm">
   <h3 class="containerH2">Create TIDP Options to download and Populate template</h3>
-  <label class="form-label form-label-top form-label-auto" id="label_folder" for="input_folder" aria-hidden="false"> Select Project </label>
+  <label class="projectLabel" id="label_folder" for="input_folder" aria-hidden="false"> Select Project </label>
   <select class="form-dropdown" id="input_project_new" onchange="setProjectDetails()">
     <option value="">Select a project...</option>
   </select>
   <div  id="statusUpdate"></div>
   <button class="submittButton" onclick="getProjectDetailsFromACC()">Generate TIDP Template</button>
 </div>
+
 <div class="form-container nodisplay" id="existingForm" >
 <h3 class="containerH2">Upload TIDP Template</h3>
-  <label class="form-label form-label-top form-label-auto" id="label_folder" for="input_folder" aria-hidden="false"> Select Project </label>
+  <label class="projectLabel" id="label_folder" for="input_folder" aria-hidden="false"> Select Project </label>
   <select class="form-dropdown" id="input_project_existing" onchange="setProjectDetails()">
     <option value="">Select a project...</option>
   </select>
@@ -80,7 +88,10 @@
   <button class="submittButton" onclick="preUploadCheck()">Upload TIDP To ACC</button>
 </div>
 
-
+<div class="toolHelp" onclick="">
+  <p>How to use this tool</p>
+  <i class="fa-regular fa-circle-question"></i>
+</div>
 
 <script>
 // Get all radio inputs

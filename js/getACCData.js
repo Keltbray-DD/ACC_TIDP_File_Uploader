@@ -641,11 +641,12 @@ async function getAllACCFolders(startfolder_list){
             await getNamingStandardID(deliverableFolders)
             statusUpdate.innerHTML = `<p class="extracted-ids"> Naming Standard Extracted</p>`
             await getTemplateFolder(folderList_Main)
-           
+            statusUpdate.innerHTML = `<p class="extracted-ids"> Template List Extracted</p>`
         } catch {
             console.log("Error: Geting folder list");
         }
         await convertToExcelTable(nsData,templatesList,deliverableFolders)
+        statusUpdate.innerHTML = `<p class="extracted-ids"> Templae and Options file ready for download</p>`
 
 
     }}
