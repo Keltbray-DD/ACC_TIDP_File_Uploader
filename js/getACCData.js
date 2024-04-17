@@ -826,7 +826,7 @@ async function convertToExcelTable(dataNamingStandard,dataTemplates,dataUploadFo
     window.URL.revokeObjectURL(optionslink.href)
     // Create a temporary link element
     const TIDPlink = document.createElement('a');
-    TIDPlink.href = '/TIDP_Template.xlsx';
+    TIDPlink.href = './TIDP_Template.xlsx';
     //TIDPlink.download = projectName+'_TIDP_Template.xlsx';
     TIDPlink.click();
 
