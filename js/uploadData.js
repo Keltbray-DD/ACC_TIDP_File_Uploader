@@ -10,7 +10,7 @@ async function preUploadCheck(){
     await getCustomDetailsData()
     progressTotal = uploadFileList.length
     await uploadTIDPToACC(uploadFileList)
-
+    statusUpdateUpload.innerHTML = `<p class="extracted-ids"> Files Uploaded to ACC</p>`
 }
 
 async function uploadTIDPToACC(array){
@@ -21,7 +21,7 @@ async function uploadTIDPToACC(array){
         uploadItem(item)
         statusUpdateUpload.innerHTML = `<p class="extracted-ids"> Uploaded ${item["Information identification (automatic)"]}...</p>`
     });
-    statusUpdateUpload.innerHTML = `<p class="extracted-ids"> Files Uploaded to ACC</p>`
+    
     }
 
 async function uploadItem(item){

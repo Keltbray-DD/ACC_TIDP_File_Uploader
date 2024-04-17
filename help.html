@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="./assets/media/Keltbray-logo_single.png" type="image/x-icon">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to use the TIDP Creator/Uploader tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        section {
+            display: flex;
+            padding: 20px;
+            background-color: #fff;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        article {
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        h1{
+            margin-left: 20px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        p {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .replayNote{
+            font-size: small;
+            color:blue;
+            font-style: italic;
+        }
+        img {
+            max-width: 100%;
+            width: 40%;
+            height: 100%;
+
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>How to use the TIDP Creator/Uploader tool</h1>
+    <section>
+        <article>
+            <h2>Step 1: Creating the TIDP Options</h2>
+            <p>To start this process you need to create the options that will go into the TIDP template, to do this first select 'I need a Template generated'. <br><br>
+                Then a second window will appear below, in that please select the project you want to create the options for. <br><br>Once the project is selected click the 'Generate TIDP Template', this will then extract the projects Naming Standard values, List of Templates and upload locations to generate an options list to input into the 'Dropdown Options' tab in the TIDP Template.<br><br>
+                The files will then automatically download into your default download location on your PC, this is normally your Downloads folder. Two files will be downloaded one being the TIDP Template and the other the TIDP Template Options.
+            </p>
+            <p class="replayNote">Click image to replay</p>
+        </article>
+        <img id="gif-1" src="./assets/media/help/creatingExtract.gif" alt="Step 1 GIF" onclick="document.getElementById('gif-1').src='./assets/media/help/creatingExtract.gif'">
+
+    </section>
+
+    <section>
+        <article>
+            <h2>Step 2: Adding in the Options in the TIDP Template</h2>
+            <p> After you have the two files from step 1 open them up. <br><br>
+                Navigate to the Options spreadsheet, then in the TIDP_Options sheet select all (using ctrl + A) and copy to the clipboard.<br><br>
+                Once copied naviagate to the TIDP Template and select the 'Dropdown list' sheet, select cell A1 and paste from the clipboard. <br><br>
+                This will then populate the dropdowns in the TIDP sheet in the template.
+            </p>
+            <p class="replayNote">Click image to replay</p>
+        </article>
+        <img id="gif-2" src="./assets/media/help/populatingTemplate.gif" alt="Step 2 GIF" onclick="document.getElementById('gif-2').src='./assets/media/help/populatingTemplate.gif'">
+
+    </section>
+
+    <section>
+        <article>
+            <h2>Step 3: Uploading a populated TIDP</h2>
+            <p> After you have populated your TIDP Template you can upload it here which will then create the placeholder documents in ACC for you to use on the project.<br><br>
+                To upload the TIDP select the 'I have a populated Template'.<br><br>
+                Then select your project from the dropdown, once selected you can upload your file either by draging and droping into the area or clicking it and selecting your file.  <br><br>
+                Once the files has been read (displaying the file name and size) click the 'Upload TIDP To ACC' button and once the progress bar is fully blue all your placeholder files will be uploaded to ACC.
+            </p>
+            <p class="replayNote">Click image to replay</p>
+        </article>
+        <img id="gif-3" src="./assets/media/help/uploadingTIDP.gif" alt="Step 3 GIF" onclick="document.getElementById('gif-3').src='./assets/media/help/uploadingTIDP.gif'">
+
+    </section>
+
+    <!-- Add more sections and articles for additional steps if needed -->
+
+</body>
+</html>
