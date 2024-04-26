@@ -67,6 +67,8 @@ let titleline1ID
 let revisionCodeID
 let paperSizeID
 let scaleID
+let stageID
+
 let ClassificationID
 let StatusCodeDescriptionID
 let fileURN

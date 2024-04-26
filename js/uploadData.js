@@ -31,7 +31,7 @@ async function uploadItem(item){
     console.log(returnData)
     fileURN = returnData.included[0].id
     fileURN = encodeURIComponent(fileURN)
-    postCustomItemDetails(accessTokenDataWrite,item["Description / Title"],fileURN,item["Sheet size (if applicable)"],item["Scale"])
+    postCustomItemDetails(accessTokenDataWrite,item["Description / Title"],fileURN,item["Sheet size (if applicable)"],item["Scale"],item["Stage"])
     updateProgressBar()
     }
 
@@ -92,7 +92,7 @@ async function postNewCopyOfItem(accessTokenDataCreate,filename,uploadFolderID,c
         return responseData
     }
 
-async function postCustomItemDetails(accessTokenDataCreate,titleline1,fileURN,paperSize,scale){
+async function postCustomItemDetails(accessTokenDataCreate,titleline1,fileURN,paperSize,scale,stage){
     const bodyData = [
         {
             // Title Line 1
@@ -113,6 +113,16 @@ async function postCustomItemDetails(accessTokenDataCreate,titleline1,fileURN,pa
             // Revision Code
             "id": scaleID.id,
             "value": scale
+        },
+        {
+            // Revision Code
+            "id": stageID.id,
+            "value": stage
+        },
+        {
+            // Revision Code
+            "id": descriptionID.id,
+            "value": "TIDP Placeholder File"
         }
         ];
         
@@ -129,8 +139,8 @@ async function postCustomItemDetails(accessTokenDataCreate,titleline1,fileURN,pa
     };
 
     const apiUrl = "https://developer.api.autodesk.com/bim360/docs/v1/projects/"+projectID+"/versions/"+fileURN+"/custom-attributes:batch-update";
-    //console.log(apiUrl)
-    //console.log(requestOptions)
+    console.log(apiUrl)
+    console.log(requestOptions)
     responseData = await fetch(apiUrl,requestOptions)
         .then(response => response.json())
         .then(data => {
@@ -153,11 +163,15 @@ async function getCustomDetailsData(){
     revisionCodeID = await findObjectByName("Revision",customAttributes)
     paperSizeID = await findObjectByName("Paper Size",customAttributes)
     scaleID = await findObjectByName("Scale",customAttributes)
+    stageID = await findObjectByName("Project Stage",customAttributes)
+    descriptionID = await findObjectByName("File Description",customAttributes)
 
     console.log(titleline1ID)
     console.log(revisionCodeID)
     console.log(paperSizeID)
     console.log(scaleID)
+    console.log(stageID)
+    console.log(descriptionID)
     }
 
 async function findObjectByName(name,data) {
