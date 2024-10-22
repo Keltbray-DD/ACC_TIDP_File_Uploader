@@ -700,7 +700,7 @@ function delay(ms) {
 
 async function getNamingStandardID(folderArray){
     wipFolderID = folderArray.filter(item => {
-        return item.folderPath.includes("0C.KELTBRAY/WIP")})
+        return item.folderPath.includes("WIP")})
     console.log(wipFolderID);
     returnData = await getFolderDetails(accessTokenDataRead,projectID,wipFolderID[0].folderID)
     
