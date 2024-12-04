@@ -655,7 +655,7 @@ async function getFolderList(AccessToken, startFolderList, parentFolderPath) {
     try {
         // Array of folder names to skip
         const foldersToSkip = ["0A.INCOMING","Z.PROJECT_ADMIN","ZZ.SHADOW_PROJECT"];
-        const deliverableFoldersToAdd = ["0C.WIP","0E.SHARED","0F.CLIENT_SHARED","0F.SHARED_TO_CLIENT", "0G.PUBLISHED", "0H.ARCHIVED"]
+        const deliverableFoldersToAdd = ["0C.WIP/"]
 
         for (const startFolder of startFolderList) {
             const folderList = await getfolderItems(startFolder.folderID, AccessToken, projectID);
