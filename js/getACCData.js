@@ -655,7 +655,7 @@ async function getFolderList(AccessToken, startFolderList, parentFolderPath) {
     try {
         // Array of folder names to skip
         const foldersToSkip = ["0A.INCOMING","Z.PROJECT_ADMIN","ZZ.SHADOW_PROJECT"];
-        const deliverableFoldersToAdd = ["WIP","0E.SHARED","0F.CLIENT_SHARED","0F.SHARED_TO_CLIENT", "0G.PUBLISHED", "0H.ARCHIVED"]
+        const deliverableFoldersToAdd = ["0C.WIP","0E.SHARED","0F.CLIENT_SHARED","0F.SHARED_TO_CLIENT", "0G.PUBLISHED", "0H.ARCHIVED"]
 
         for (const startFolder of startFolderList) {
             const folderList = await getfolderItems(startFolder.folderID, AccessToken, projectID);
@@ -672,7 +672,7 @@ async function getFolderList(AccessToken, startFolderList, parentFolderPath) {
                         folderNameLocal = "folderPath: " + folder.attributes.name;
                         const fullPath = parentFolderPath ? parentFolderPath + '/' + folderNameLocal.split(': ')[1] : folderNameLocal.split(': ')[1];
                         folderList_Main.push({ folderID: folder.id, folderPath: fullPath,folderNameEnd: folderNameLocal });
-                        if(deliverableFoldersToAdd.some(AddName => folderNameLocal.includes(AddName))){
+                        if(deliverableFoldersToAdd.some(AddName => fullPath.includes(AddName))){
                             deliverableFolders.push({ folderID: folder.id, folderPath: fullPath,folderNameEnd: folder.attributes.name });
                         }
                         statusUpdate.innerHTML = `<p class="extracted-ids"> Added folder: ${fullPath}</p>`

@@ -93,7 +93,7 @@ async function postNewCopyOfItem(accessTokenDataCreate,filename,uploadFolderID,c
     }
 
 async function postCustomItemDetails(accessTokenDataCreate,titleline1,fileURN,paperSize,scale,stage){
-    const bodyData = [
+    let bodyData = [
         {
             // Title Line 1
             "id": titleline1ID.id,
@@ -105,27 +105,33 @@ async function postCustomItemDetails(accessTokenDataCreate,titleline1,fileURN,pa
             "value": "P01.01"
         },
         {
-            // Title Line 1
-            "id": paperSizeID.id,
-            "value": paperSize
-        },
-        {
-            // Revision Code
-            "id": scaleID.id,
-            "value": scale
-        },
-        {
-            // Revision Code
-            "id": stageID.id,
-            "value": stage
-        },
-        {
-            // Revision Code
+            // Description Code
             "id": descriptionID.id,
             "value": "TIDP Placeholder File"
         }
         ];
-        
+
+    if(stageID){
+        bodyData.push({
+            // Revision Code
+            "id": stageID.id,
+            "value": stage
+        })
+    }
+    if(paperSizeID){
+        bodyData.push({
+            // Paper Size
+            "id": paperSizeID.id,
+            "value": paperSize
+        })
+    }
+    if(scaleID){
+        bodyData.push({
+            // Scale
+            "id": scaleID.id,
+            "value": scale
+        })
+    }
     const headers = {
         'Authorization':"Bearer "+accessTokenDataCreate,
         'Content-Type': 'application/json',

@@ -41,6 +41,11 @@ img.logo_H {
 
 }
 
+.version {
+  text-align: right;
+  margin-right:5px ;
+}
+
 /* Additional styling */
 h1, h3 {
     margin: 0;
