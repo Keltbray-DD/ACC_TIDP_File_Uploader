@@ -507,7 +507,7 @@ async function listProjects(){
         }
         ProjectList.push({'ProjectName':ProjectListRaw.data[i].attributes.name,'ProjectID':ProjectListRaw.data[i].id})
     }
-
+    ProjectList.sort((a, b) => a.ProjectName.localeCompare(b.ProjectName));
     console.log("Filtered Project List",ProjectList)
     sessionStorage.setItem('ProjectList',JSON.stringify(ProjectList));
 
@@ -651,47 +651,64 @@ async function getAllACCFolders(startfolder_list){
 
     }}
 
-async function getFolderList(AccessToken, startFolderList, parentFolderPath) {
-    try {
-        // Array of folder names to skip
-        const foldersToSkip = ["0A.INCOMING","Z.PROJECT_ADMIN","ZZ.SHADOW_PROJECT"];
-        const deliverableFoldersToAdd = ["0C.WIP/"]
-
-        for (const startFolder of startFolderList) {
-            const folderList = await getfolderItems(startFolder.folderID, AccessToken, projectID);
-            if (!folderList || !folderList.data || !Array.isArray(folderList.data)) {
-                throw new Error("Error getting folder items: Invalid folderList data");
-            }
-            if (getRate >= 290) {
-                console.log("Waiting for 10 Seconds..."); // Displaying the message for a 60-second delay
-                await delay(20000); // Delaying for 60 seconds
-            } else {
-                const promises = folderList.data.map(async folder => {
-                    if (folder.type === 'folders') {
-                        const folderID = "folderID: " + folder.id;
-                        folderNameLocal = "folderPath: " + folder.attributes.name;
-                        const fullPath = parentFolderPath ? parentFolderPath + '/' + folderNameLocal.split(': ')[1] : folderNameLocal.split(': ')[1];
-                        folderList_Main.push({ folderID: folder.id, folderPath: fullPath,folderNameEnd: folderNameLocal });
-                        if(deliverableFoldersToAdd.some(AddName => fullPath.includes(AddName))){
-                            deliverableFolders.push({ folderID: folder.id, folderPath: fullPath,folderNameEnd: folder.attributes.name });
-                        }
-                        statusUpdate.innerHTML = `<p class="extracted-ids"> Added folder: ${fullPath}</p>`
-                        console.log("Added folder:", folderID, fullPath);
-                        // Check if the folderName contains any of the names in foldersToSkip array
-                        if (!foldersToSkip.some(skipName => folderNameLocal.includes(skipName))) {
-                            await getFolderList(AccessToken, [{ folderID: folder.id, folderPath: fullPath }], fullPath);
-                        } else {
-                            console.log("Skipping getFolderList for folder:", folderID, fullPath);
+    async function getFolderList(AccessToken, startFolderList, parentFolderPath) {
+        try {
+            // Array of folder names to skip
+            const foldersToSkip = ["0A.INCOMING", "0D.COMMERCIAL", "Z.PROJECT_ADMIN", "ZZ.SHADOW_PROJECT","SHADOW_PROJECT"];
+            const deliverableFoldersToAdd = ["0C.WIP/", "APPROVED_TEMPLATES"];
+    
+            for (const startFolder of startFolderList) {
+                const folderList = await getfolderItems(startFolder.folderID, AccessToken, projectID);
+    
+                if (!folderList || !folderList.data || !Array.isArray(folderList.data)) {
+                    throw new Error("Error getting folder items: Invalid folderList data");
+                }
+    
+                if (getRate >= 290) {
+                    console.log("Waiting for 10 Seconds..."); // Displaying the message for a 10-second delay
+                    getRate = 0;
+                    await delay(10000); // Delaying for 10 seconds
+                } else {
+                    for (const folder of folderList.data) {
+                        if (folder.type === 'folders') {
+                            const folderID = folder.id;
+                            const folderNameLocal = folder.attributes.name;
+                            const fullPath = parentFolderPath
+                                ? parentFolderPath + '/' + folderNameLocal
+                                : folderNameLocal;
+    
+                            folderList_Main.push({
+                                folderID: folder.id,
+                                folderPath: fullPath,
+                                folderNameEnd: folderNameLocal,
+                            });
+    
+                            if (deliverableFoldersToAdd.some((AddName) => fullPath.includes(AddName))) {
+                                deliverableFolders.push({
+                                    folderID: folder.id,
+                                    folderPath: fullPath,
+                                    folderNameEnd: folderNameLocal,
+                                });
+                            }
+    
+                            statusUpdate.innerHTML = `<p class="extracted-ids"> Added folder: ${fullPath}</p>`;
+                            console.log("Added folder:", folderID, fullPath);
+    
+                            // Check if the folderName contains any of the names in foldersToSkip array
+                            if (!foldersToSkip.some((skipName) => folderNameLocal.includes(skipName))) {
+                                console.log("Fetching nested folders for:", folderID);
+                                await delay(50); // Add a 2-second delay between calls
+                                await getFolderList(AccessToken, [{ folderID: folder.id, folderPath: fullPath }], fullPath);
+                            } else {
+                                console.log("Skipping getFolderList for folder:", folderID, fullPath);
+                            }
                         }
                     }
-                });
-                await Promise.all(promises);
+                }
             }
+        } catch (error) {
+            console.error(`Error in getFolderList: ${error.message}`);
         }
-    } catch (error) {
-        console.error(error.message);
-    }
-
     }
 
 function delay(ms) {
