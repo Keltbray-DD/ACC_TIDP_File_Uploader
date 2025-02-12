@@ -51,6 +51,7 @@ let accessTokenDataWrite
 
 let ProjectList =[]
 let ProjectListRaw
+let ProjectObject
 
 let namingstandard;
 let filelist =[];

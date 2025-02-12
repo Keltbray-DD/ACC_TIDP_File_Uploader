@@ -5,6 +5,18 @@ const progressBarText = document.querySelector('.progress-bar-Main__text');
 let progressTotal
 
 async function preUploadCheck(){
+    const select = document.getElementById('input_project_existing').value;
+    const fileInput = document.getElementById('fileInput');
+    const uploadfile = fileInput.files[0];
+    if (!select.trim()) {
+        // Alert the user if the username field is empty
+        alert('Please select a project');
+        return; // Exit the function
+    }
+    if(!uploadfile){
+        alert('Please upload a TIDP file');
+        return; // Exit the function
+    }
     statusUpdateUpload = document.getElementById('statusUpdateUpload')
     statusUpdateUpload.innerHTML = `<p class="extracted-ids"> Getting Relevant Data...</p>`
     await getCustomDetailsData()
@@ -78,7 +90,7 @@ async function postNewCopyOfItem(accessTokenDataCreate,filename,uploadFolderID,c
             body: JSON.stringify(bodyData),
         };
 
-        const apiUrl = "https://developer.api.autodesk.com/data/v1/projects/"+projectID+"/items?copyFrom="+copyURN;
+        const apiUrl = "https://developer.api.autodesk.com/data/v1/projects/b."+projectID+"/items?copyFrom="+copyURN;
         //console.log(requestOptions)
         responseData = await fetch(apiUrl,requestOptions)
             .then(response => response.json())

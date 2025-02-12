@@ -298,7 +298,7 @@ async function getfolderItems(folder_id,AccessToken,project_id){
         headers: headers,
     };
 
-    const apiUrl = "https://developer.api.autodesk.com/data/v1/projects/"+project_id+"/folders/"+folder_id+"/contents";
+    const apiUrl = "https://developer.api.autodesk.com/data/v1/projects/b."+project_id+"/folders/"+folder_id+"/contents";
     //console.log(apiUrl)
     //console.log(requestOptions)
     signedURLData = await fetch(apiUrl,requestOptions)
@@ -327,7 +327,7 @@ async function getFolderDetails(accessTokenDataRead,projectID,folderID){
         headers: headers,
     };
 
-    const apiUrl = "https://developer.api.autodesk.com/data/v1/projects/"+projectID+"/folders/"+folderID;
+    const apiUrl = "https://developer.api.autodesk.com/data/v1/projects/b."+projectID+"/folders/"+folderID;
     //console.log(apiUrl)
     //console.log(requestOptions)
     responseData = await fetch(apiUrl,requestOptions)
@@ -499,6 +499,7 @@ async function listProjects(){
     }
     ProjectListRaw = await fetchProjects()
 
+
     //console.log("Raw Project List",ProjectListRaw.data)
 
     for(let i = 0; i < ProjectListRaw.length; i++){
@@ -598,6 +599,12 @@ async function getProjects(AccessToken){
     }
 
 async function getProjectDetailsFromACC(){
+    const select = document.getElementById('input_project_new').value;
+    if (!select.trim()) {
+        // Alert the user if the username field is empty
+        alert('Please select a project');
+        return; // Exit the function
+    }
     accessTokenDataRead = await getAccessToken("data:read")
     topFolderData = await getProjectTopFolder(accessTokenDataRead,hubID,projectID)
     ProjectFiles = topFolderData.data.filter(item => {
@@ -628,7 +635,7 @@ async function getProjectTopFolder(accessTokenDataRead,hubID,projectID){
         //body: JSON.stringify(bodyData)
     };
 
-    const apiUrl = "https://developer.api.autodesk.com/project/v1/hubs/"+hubID+"/projects/"+projectID+"/topFolders";
+    const apiUrl = "https://developer.api.autodesk.com/project/v1/hubs/"+hubID+"/projects/b."+projectID+"/topFolders";
     console.log(apiUrl)
     console.log(requestOptions)
     responseData = await fetch(apiUrl,requestOptions)
@@ -683,8 +690,47 @@ async function getAllACCFolders(startfolder_list){
 
 
     }}
+    async function getJSONDataFromSP(project_id){
 
+        const bodyData = {
+            "project_ID":project_id
+        };
+    
+        const headers = {
+            'Content-Type':"application/json",
+        };
+    
+        const requestOptions = {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(bodyData)
+        };
+    
+        const apiUrl = "https://prod-29.uksouth.logic.azure.com:443/workflows/aa3b3f6ba93f4901acef15184cd5b8de/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=olW_Pb6Al6jJNptqxPXBc-_YBoqN2YOmYiYYBrqd1C8";
+        //console.log(apiUrl)
+        //console.log(requestOptions)
+        signedURLData = await fetch(apiUrl,requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                const JSONdata = data
+            console.log(JSONdata)
+            //console.log(JSONdata.uploadKey)
+            //console.log(JSONdata.urls)
+            return JSONdata
+            })
+            .catch(error => console.error('Error fetching data:', error));
+        return signedURLData
+    }
     async function getFolderList(AccessToken, startFolderList, parentFolderPath) {
+
+        ProjectObject = await getJSONDataFromSP(projectID)
+        console.log(ProjectObject);
+        folderList_Main = JSON.parse(ProjectObject[0].folder_array)
+        deliverableFolders = JSON.parse(ProjectObject[0].folder_array_deliverables)
+        console.log(folderList_Main);
+        console.log(deliverableFolders);
+
+        return
         try {
             // Array of folder names to skip
             const foldersToSkip = ["0A.INCOMING", "0D.COMMERCIAL", "Z.PROJECT_ADMIN", "ZZ.SHADOW_PROJECT","SHADOW_PROJECT"];
@@ -764,8 +810,10 @@ async function getNamingStandardID(folderArray){
 }
 
 async function getTemplateFolder(folderArray){
-    templateFolderID = folderArray.filter(item => {
-        return item.folderPath === "0B.GENERAL/APPROVED_TEMPLATES"})[0].folderID
+    templateFolderID = JSON.parse(ProjectObject[0].templateFolder);
+    templateFolderID = templateFolderID[0].folderID
+    // templateFolderID = folderArray.filter(item => {
+    //     return item.folderPath === "0B.GENERAL/APPROVED_TEMPLATES"})[0].folderID
     console.log(templateFolderID);
     await getTemplateFiles()
     
