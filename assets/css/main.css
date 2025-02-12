@@ -1,44 +1,98 @@
 body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #bebfbc;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  background-size: cover;
+
+  background: rgb(255,255,255);
+  background: linear-gradient(158deg, rgba(255,255,255,1) 0%, rgba(59,219,135,1) 37%, rgba(111,188,247,1) 65%, rgba(4,113,190,1) 100%);
+}
+html {
+height: 100%;
 }
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: rgb(245, 243, 243);
-    padding: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* slight box shadow */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgb(245, 243, 243);
+  padding: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* slight box shadow */
+  height: 110px;
 }
 .header-section {
-    flex: 1;
+  flex: 1;
 }
 .header-section h2 {
-    text-align: left; /* Left text horizontally */
-    float: left;
-    margin: 10;
-    height: 100%;
+  text-align: left; /* Left text horizontally */
+  float: left;
+  margin: 10px;
+  height: 100%;
+}
+.header-section h3 {
+  text-align: right; 
+
+  margin: 5px;
+  height: 100%;
 }
 
 img.logo_H {
-    float: left;
-    height: 80px;
-  }
+  float: left;
+  height: 80px;
+  margin: auto;
+}
 
 .header-section:nth-child(2) {
-    text-align: center;
-    flex: 2.5; /* 60% of the width */
+  text-align: center;
+  flex: 2.5; /* 60% of the width */
 
 }
 
 .header-section:first-child,
 .header-section:last-child {
-    flex: 1.5; /* 20% of the width each */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
+  flex: 1.5; /* 20% of the width each */
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
 
+}
+
+
+/* Additional styling */
+.header h1, h3 {
+  margin: 0;
+}
+
+#titleBox {
+margin: 0;
+padding: 0;
+}
+
+#titleBox h1 {
+margin: 0;
+padding: 0;
+text-align: center;
+font-size: 24px;
+font-weight: bold;
+color: var(--text-color);
+margin-top: 20px;
+}
+
+#titleBox h3 {
+margin: 0;
+padding: 0;
+text-align: center;
+margin-bottom: 0px;
+font-size: 20px;
+font-weight: bold;
+color: var(--text-color);
+margin-top: 0; /* Removes any extra spacing above */
+  padding-top: 0; /* Ensures no extra padding */
+  line-height: 1; /* Reduces the height occupied by text */
+  position: relative; /* Allows for fine-tuned positioning */
+  top: -10px; /* Moves it upwards */
 }
 
 .version {
