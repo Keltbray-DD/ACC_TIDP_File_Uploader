@@ -693,7 +693,7 @@ async function getAllACCFolders(startfolder_list){
     async function getJSONDataFromSP(project_id){
 
         const bodyData = {
-            "project_ID":project_id
+            "project_Name":project_id
         };
     
         const headers = {
@@ -723,10 +723,25 @@ async function getAllACCFolders(startfolder_list){
     }
     async function getFolderList(AccessToken, startFolderList, parentFolderPath) {
 
-        ProjectObject = await getJSONDataFromSP(projectID)
+        ProjectObject = await getJSONDataFromSP(projectName)
         console.log(ProjectObject);
-        folderList_Main = JSON.parse(ProjectObject[0].folder_array)
-        deliverableFolders = JSON.parse(ProjectObject[0].folder_array_deliverables)
+        if(ProjectObject.type == "framework"){
+            for (let index = 0; index < ProjectObject.data.length; index++) {
+                const element = ProjectObject.data[index];
+                console.log(element)
+                const folderArray = JSON.parse(element.folder_array)
+                const folderArrayDeliverables = JSON.parse(element.folder_array_deliverables)
+                console.log(folderArray)
+                console.log(folderArrayDeliverables)
+                if(!folderArray || !folderArrayDeliverables){}else{
+                    folderList_Main = folderList_Main.concat(folderArray)
+                    deliverableFolders = deliverableFolders.concat(folderArrayDeliverables)
+                }
+            }
+        }else{
+            folderList_Main = JSON.parse(ProjectObject.data[0].folder_array)
+            deliverableFolders = JSON.parse(ProjectObject.data[0].folder_array_deliverables)
+        }
         console.log(folderList_Main);
         console.log(deliverableFolders);
 
@@ -810,7 +825,7 @@ async function getNamingStandardID(folderArray){
 }
 
 async function getTemplateFolder(folderArray){
-    templateFolderID = JSON.parse(ProjectObject[0].templateFolder);
+    templateFolderID = JSON.parse(ProjectObject.data[0].templateFolder);
     templateFolderID = templateFolderID[0].folderID
     // templateFolderID = folderArray.filter(item => {
     //     return item.folderPath === "0B.GENERAL/APPROVED_TEMPLATES"})[0].folderID

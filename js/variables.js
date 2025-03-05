@@ -1,5 +1,5 @@
 const appName = "ACC TIDP Uploader";
-const appVersion = "v1.2.1";
+const appVersion = "v1.2.2";
 
 let projectID;
 let projectName;
