@@ -708,7 +708,7 @@ async function getAllACCFolders(startfolder_list){
     
         const apiUrl = "https://prod-29.uksouth.logic.azure.com:443/workflows/aa3b3f6ba93f4901acef15184cd5b8de/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=olW_Pb6Al6jJNptqxPXBc-_YBoqN2YOmYiYYBrqd1C8";
         //console.log(apiUrl)
-        //console.log(requestOptions)
+        console.log(requestOptions)
         signedURLData = await fetch(apiUrl,requestOptions)
             .then(response => response.json())
             .then(data => {
@@ -811,7 +811,8 @@ function delay(ms) {
 
 async function getNamingStandardID(folderArray){
     wipFolderID = folderArray.filter(item => {
-        return item.folderPath.includes("WIP")})
+        return item.folderPath.includes("0C.WIP /")})
+        console.log(wipFolderID)
     console.log(wipFolderID);
     returnData = await getFolderDetails(accessTokenDataRead,projectID,wipFolderID[0].folderID)
     
