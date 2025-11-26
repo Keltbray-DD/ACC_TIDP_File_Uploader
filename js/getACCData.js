@@ -202,7 +202,7 @@ async function getAccessToken(scopeInput){
         body: JSON.stringify(bodyData)
     };
 
-    const apiUrl = "https://prod-18.uksouth.logic.azure.com:443/workflows/d8f90f38261044b19829e27d147f0023/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=-N-bYaES64moEe0gFiP5J6XGoZBwCVZTmYZmUbdJkPk";
+    const apiUrl = "https://default917b4d06d2e9475983a3e7369ed74e.8f.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/df0aebc4d2324e98bcfa94699154481f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=igiodIb-lGf7MTGYIlPATMr-JbyDeztuALW5F6IIaNs";
     //console.log(apiUrl)
     //console.log(requestOptions)
     signedURLData = await fetch(apiUrl,requestOptions)
@@ -546,7 +546,7 @@ async function fetchProjects() {
         body: JSON.stringify(bodyData)
     };
 
-    const apiUrl = "https://prod-09.uksouth.logic.azure.com:443/workflows/30f57be09dd04690be4212eb4ed6df65/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=LTEr0Q1hYKDoLnA5uWkU59tQcrDJn7scIZIiPHTQa2s";
+    const apiUrl = "https://default917b4d06d2e9475983a3e7369ed74e.8f.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/30f57be09dd04690be4212eb4ed6df65/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=AKQMd6IhhtwV5Rid6zC7KTH3LPtniMWevgkP9UlSKko";
     //console.log(apiUrl)
     //console.log(requestOptions)
     responseData = await fetch(apiUrl,requestOptions)
@@ -706,7 +706,7 @@ async function getAllACCFolders(startfolder_list){
             body: JSON.stringify(bodyData)
         };
     
-        const apiUrl = "https://prod-29.uksouth.logic.azure.com:443/workflows/aa3b3f6ba93f4901acef15184cd5b8de/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=olW_Pb6Al6jJNptqxPXBc-_YBoqN2YOmYiYYBrqd1C8";
+        const apiUrl = "https://default917b4d06d2e9475983a3e7369ed74e.8f.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/aa3b3f6ba93f4901acef15184cd5b8de/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=rsVMeC9t3eP3LkX1-vcOI2Xk4M-aopqMjV8W_7Y-LF4";
         //console.log(apiUrl)
         console.log(requestOptions)
         signedURLData = await fetch(apiUrl,requestOptions)
