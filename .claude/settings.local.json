@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(py --version)",
+      "Bash(python -m http.server 8080 --bind 127.0.0.1)",
+      "Bash(python -m pip install --quiet openpyxl)"
+    ]
+  }
+}

@@ -6,12 +6,31 @@
     userID = userDetails.sub;
     sessionStorage.setItem('userDetails',userDetails)
     sessionStorage.setItem('userID',userID)
-    console.log("userID",sessionStorage.getItem('userID'))
+    //console.log("userID",sessionStorage.getItem('userID'))
     setUserInfo(userDetails);
 
+    const profileMenu = document.getElementById('profileMenu');
+    const dropdown = document.getElementById('dropdown');
+
+    profileMenu.addEventListener('click', (e) => {
+        dropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!profileMenu.contains(e.target)) {
+        dropdown.classList.remove('active');
+        }
+    });
   }
+
+  function logout() {
+    localStorage.setItem("user_refresh_token", "blank");
+    clearUrlParameters();
+    signin();
+  }
+
   async function setUserInfo(data) {
-    const profilePic = document.getElementById("userPicture");
+    const profilePic = document.getElementById("userPic");
     const profileName = document.getElementById("userName");
     const profileEmail = document.getElementById("userEmail");
     if (data.picture) {
@@ -40,7 +59,7 @@
     response = await fetch(apiUrl, requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
+        //console.log(data);
         userDetails = data;
         return data;
       })
@@ -60,10 +79,10 @@
     // Check if 'code' parameter exists in the URL
     var codeParam = getParameterByName("code");
     var loaclRefreshToken = localStorage.getItem('user_refresh_token')
-    console.log(loaclRefreshToken)
+    //console.log(loaclRefreshToken)
     if(loaclRefreshToken == 'blank'){
       if (codeParam !== null) {
-        console.log("Code parameter found: " + codeParam);
+        //console.log("Code parameter found: " + codeParam);
         // Call the function to handle authorization
         await getAuthorisation(codeParam);
       } else {
@@ -124,7 +143,7 @@
     };
   
     const apiUrl = "https://developer.api.autodesk.com/authentication/v2/token";
-    console.log(apiUrl, requestOptions)
+    //console.log(apiUrl, requestOptions)
     AccessToken_Local = await fetch(apiUrl, requestOptions)
       .then((response) => response.json())
       .then((data) => {
@@ -133,13 +152,13 @@
           clearUrlParameters();
           location.reload();
         } else {
-          console.log(data);
+          //console.log(data);
           
           userRefreshToken = data.refresh_token;
-          console.log("userAccessToken",userRefreshToken)
+          //console.log("userAccessToken",userRefreshToken)
           localStorage.setItem('user_refresh_token', userRefreshToken);
           userAccessToken = data.access_token;
-          console.log("userAccessToken", userAccessToken);
+          //console.log("userAccessToken", userAccessToken);
           // Clear the URL parameters once the token is retrieved successfully
           getUserDetailsFill();
         }
@@ -180,7 +199,7 @@
     };
   
     const apiUrl = "https://developer.api.autodesk.com/authentication/v2/token";
-    console.log(apiUrl, requestOptions)
+    //console.log(apiUrl, requestOptions)
     AccessToken_Local = await fetch(apiUrl, requestOptions)
       .then((response) => response.json())
       .then((data) => {
@@ -190,12 +209,12 @@
           clearUrlParameters();
           location.reload();
         } else {
-          //console.log(data);
+          ////console.log(data);
           localStorage.setItem('user_refresh_token',data.refresh_token);
           userRefreshToken = data.refresh_token;
-          //console.log("userRefreshToken", userRefreshToken);
+          ////console.log("userRefreshToken", userRefreshToken);
           userAccessToken = data.access_token;
-          //console.log("userAccessToken", userAccessToken);
+          ////console.log("userAccessToken", userAccessToken);
           getUserDetailsFill();
         }
         return data;

@@ -36,12 +36,24 @@ function handleFile(file) {
         const fileSizeInBytes = file.size;
         const fileSizeInKb = fileSizeInBytes / 1024;
         const fileSizeText = fileSizeInKb > 1024 ? (fileSizeInKb / 1024).toFixed(2) + ' MB' : fileSizeInKb.toFixed(2) + ' KB';
-    document.getElementById('file-info').innerHTML = `<p>File: ${file.name}</p><p>Size: ${fileSizeText}</p>`;
+    const fileInfoEl = document.getElementById('file-info');
+    fileInfoEl.replaceChildren();
+    const nameP = document.createElement('p');
+    nameP.textContent = `File: ${file.name}`;
+    const sizeP = document.createElement('p');
+    sizeP.textContent = `Size: ${fileSizeText}`;
+    fileInfoEl.append(nameP, sizeP);
     fileExtension = file.name.split('.').pop();
     // Add 'uploaded' class to indicate file upload
     document.getElementById('drop-area').classList.add('uploaded');
     console.log(file)
     droppedfile = file
+
+    // A new file invalidates any prior validation result; clear the log and
+    // hide the Confirm Upload button so the user has to revalidate.
+    if (typeof clearUploadLog === 'function') clearUploadLog();
+    if (typeof resetValidationState === 'function') resetValidationState();
+
     extractDataFromExcel(file);
     }
 
@@ -53,10 +65,11 @@ function extractDataFromExcel(event) {
         var data = new Uint8Array(event.target.result);
         var workbook = XLSX.read(data, { type: "array" });
 
-        // Specify the range of cells for your table
+        // V2 template: TIDP table is A1:P149 with headers in row 1.
+        // (V1 had headers at row 10 across A:AV — old hardcoded range.)
         var sheetName = "TIDP";
-        var startCell = "A10";
-        var endCell = "AV2000";
+        var startCell = "A1";
+        var endCell = "P2000";
 
         // Get the worksheet
         var worksheet = workbook.Sheets[sheetName];

@@ -1,5 +1,5 @@
-const appName = "ACC TIDP Uploader";
-const appVersion = "v1.4.0";
+const appName = "Forma TIDP Uploader";
+const appVersion = "v1.5.0";
 
 let projectID;
 let projectName;
@@ -90,22 +90,27 @@ let reloadButton
 let loadingScreen
 let filestouploadList
 
+// Resolves once login has completed AND user details (incl. userID in sessionStorage) are populated.
+// gatherArrays() awaits this before fetching the project list.
+let resolveLoginReady;
+const loginReady = new Promise(resolve => { resolveLoginReady = resolve; });
+
 document.addEventListener('DOMContentLoaded', async function() {
     // Get the full URL of the current webpage
     const fullUrl = window.location.href;
     document.getElementById("appInfo").textContent = `${appName} ${appVersion}`;
     // Split the URL at the "?" and take the first part
     toolURL = fullUrl.split('?')[0];
-    await checkLogin()
+    try {
+        await checkLogin()
+    } finally {
+        // Always signal — if login redirected (signin) the page is unloading anyway;
+        // if it failed, downstream code can fail loudly rather than hang forever.
+        resolveLoginReady();
+    }
     loadingScreen = document.getElementById('loadingScreen');
     statusUpdateLoading = document.getElementById('statusUpdateLoading');
     const logoutButton = document.getElementById('logoutBtn');
-
-    // Add an event listener for the button click event
-    logoutButton.addEventListener('click', function() {
-        signOut()
-    })
-
 
 })
 function signOut(){

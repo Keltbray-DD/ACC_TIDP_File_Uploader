@@ -1,19 +1,175 @@
-body {
+.upload-log-panel {
+  margin-top: 12px;
+  border: 1px solid #2c2f36;
+  border-radius: 6px;
+  background: #1e1f24;
+  overflow: hidden;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  color: #d6d8db;
+}
+.upload-log-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #2c2f36;
+  color: #f0f0f0;
+  font-weight: bold;
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: center;
-  background-size: cover;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.upload-log-panel__clear {
+  background: transparent;
+  color: #b0b3b8;
+  border: 1px solid #4a4d54;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+.upload-log-panel__clear:hover {
+  color: #fff;
+  border-color: #888;
+}
+.upload-log {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.submittButton--confirm {
+  margin-top: 8px;
+  background-color: #2e7d32;
+}
+.submittButton--confirm:hover {
+  background-color: #256528;
+}
+.submittButton--confirm:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+.upload-log__entry {
+  margin: 0 0 2px 0;
+  line-height: 1.45;
+}
+.upload-log__entry--info    { color: #d6d8db; }
+.upload-log__entry--success { color: #4ade80; }
+.upload-log__entry--warn    { color: #fbbf24; }
+.upload-log__entry--error   { color: #f87171; }
+.upload-log__time {
+  color: #6b7280;
+  margin-right: 6px;
+}
 
-  background: rgb(255,255,255);
-  background: linear-gradient(158deg, rgba(255,255,255,1) 0%, rgba(59,219,135,1) 37%, rgba(111,188,247,1) 65%, rgba(4,113,190,1) 100%);
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+  
+    background: rgb(255,255,255);
+    background: linear-gradient(158deg, rgba(255,255,255,1) 0%, rgba(59,219,135,1) 37%, rgba(111,188,247,1) 65%, rgba(4,113,190,1) 100%);
+    /* Don’t repeat the gradient image */
+    background-repeat: no-repeat;
+    
+    /* Keep the background fixed in place as the user scrolls */
+    background-attachment: fixed;
+    
+    /* Make sure the gradient covers the entire screen */
+    background-size: cover;
 }
+
 html {
-height: 100%;
+    height: 100%;
 }
+
+.top-bar {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+  }
+  .logo {
+    max-width: 150px;
+  }
+  .top-bar .title h2 {
+    margin: 0;
+    margin: auto;
+  }
+  .profile-container {
+    position: relative;
+    cursor: pointer;
+    width: 150px;
+  }
+  
+  .profile-pic {
+    float: right;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background-color: white;
+    color: black;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    width: 200px;
+    display: none;
+    z-index: 1001;
+  }
+  
+  .dropdown-menu.active {
+    display: block;
+  }
+  
+  
+  .dropdown-menu div {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .dropdown-menu div:last-child {
+    border-bottom: none;
+  }
+  
+  .dropdown-menu div p {
+    max-width: 100%;
+    overflow: hidden;        /* Hides the overflowing content */
+    text-overflow: ellipsis; /* Adds the ellipsis (...) */
+    white-space: nowrap;     /* Prevents text from wrapping to the next line */
+    margin: 5px 0;
+  }
+  
+  .logout {
+    background-color: #f44336;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0 0 6px 6px;
+  }
+  
+  .logout:hover {
+    background-color: #d32f2f;
+  }
 header {
   display: flex;
   justify-content: space-between;

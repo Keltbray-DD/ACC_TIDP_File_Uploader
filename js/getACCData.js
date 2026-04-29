@@ -5,6 +5,12 @@ let statusUpdate
 let accessTokenDataRead
 let nsData = [];
 
+// Status and Document Classification options pulled from ACC at TIDP-generate
+// time. Both are mandatory attributes in Forma; their allowed values are
+// returned by the docs custom-attribute-definitions endpoint per folder.
+let statusOptions = [];
+let docClassificationOptions = [];
+
 
 document.addEventListener('DOMContentLoaded', function() {
     loadingScreen = document.getElementById('loadingScreen');
@@ -22,14 +28,13 @@ document.addEventListener('DOMContentLoaded', function() {
     async function gatherArrays() {
 
         showLoadingScreen(); // Show loading screen before gathering arrays
-        //await getfileslist()
+        // Wait until login is fully complete and userID is in sessionStorage,
+        // otherwise fetchProjects() POSTs a null userID and the dropdown comes back empty.
+        await loginReady;
         await listProjects()
-        //await getNamingStandard()
-        //await getTemplateFiles()
-        //getCustomDetailsData()
 
         hideLoadingScreen();
- 
+
     }
     gatherArrays();
     })
@@ -682,11 +687,13 @@ async function getAllACCFolders(startfolder_list){
             statusUpdate.innerHTML = `<p class="extracted-ids"> Naming Standard Extracted</p>`
             await getTemplateFolder(folderList_Main)
             statusUpdate.innerHTML = `<p class="extracted-ids"> Template List Extracted</p>`
+            await getDocAttributeOptions(deliverableFolders)
+            statusUpdate.innerHTML = `<p class="extracted-ids"> Status & Document Classification options extracted</p>`
         } catch {
             console.log("Error: Geting folder list");
         }
-        await convertToExcelTable(nsData,templatesList,deliverableFolders)
-        statusUpdate.innerHTML = `<p class="extracted-ids"> Templae and Options file ready for download</p>`
+        await convertToExcelTable(nsData,templatesList,deliverableFolders,statusOptions,docClassificationOptions)
+        statusUpdate.innerHTML = `<p class="extracted-ids"> TIDP template ready — check your downloads folder</p>`
 
 
     }}
@@ -832,119 +839,203 @@ async function getTemplateFolder(folderArray){
     //     return item.folderPath === "0B.GENERAL/APPROVED_TEMPLATES"})[0].folderID
     console.log(templateFolderID);
     await getTemplateFiles()
-    
-    return 
+
+    return
 }
 
-async function convertToExcelTable(dataNamingStandard,dataTemplates,dataUploadFolders){
-    // Create a new workbook
-    const workbook = XLSX.utils.book_new();
-    const headers = [];
+// Fetch the doc custom-attribute definitions for the first deliverable folder
+// and pull out the allowed values for Status and Document Classification.
+// Both are mandatory in Forma but list-typed, so each definition exposes its
+// allowed options on a "values" / "arrayValues" / "options" array depending
+// on the API revision — extractAttributeValues handles all three shapes.
+async function getDocAttributeOptions(folderArray) {
+    statusOptions = [];
+    docClassificationOptions = [];
 
-    // Generate headers based on data.name
-    dataNamingStandard.forEach(obj => {
-        if(obj.name != "Number"){
-        const attributeName = obj.name;
-        headers.push(`${attributeName} Value`, `${attributeName} Description`);
-        }
-    });
-    headers.push(`Paper Size`,`Scale`,`Template Name`, `Template ACC ID`,`Upload Folders Name`, `Upload Folder ACC ID`);
-
-    // Create a worksheet
-    const worksheet = XLSX.utils.aoa_to_sheet([headers]);
-    
-    // Define the starting row and column
-    let startRow = 1; // Start from row 2 (indexing starts from 0)
-    let startColumn = 0; // Start from column B (indexing starts from 0)
-
-    // Populate the worksheet with data
-    dataNamingStandard.forEach(obj => {
-        if(obj.name != "Number"){
-            const options = obj.options;
-            options.forEach(option => {
-                const row = startRow;
-                const column = startColumn;
-                XLSX.utils.sheet_add_aoa(worksheet, [[option.value, option.description]], { origin: { r: row, c: column } });
-                startRow++;
-            });
-            
-            // Increment the start row for the next attribute
-            startRow = 1
-            startColumn += 2;
-        }
-
-    });
-    paperSizeArray.forEach(option => {
-        const row = startRow;
-        const column = startColumn;
-        XLSX.utils.sheet_add_aoa(worksheet, [[option]], { origin: { r: row, c: column } });
-        startRow++;
-    });
-
-    startRow = 1
-    startColumn += 1;
-
-    scaleArray.forEach(option => {
-        const row = startRow;
-        const column = startColumn;
-        XLSX.utils.sheet_add_aoa(worksheet, [[option]], { origin: { r: row, c: column } });
-        startRow++;
-    });
-
-    startRow = 1
-    startColumn += 1;
-
-    dataTemplates.forEach(option => {
-        const row = startRow;
-        const column = startColumn;
-        XLSX.utils.sheet_add_aoa(worksheet, [[option.templateName, option.templateID]], { origin: { r: row, c: column } });
-        startRow++;
-    });
-    
-    // Increment the start row for the next attribute
-    startRow = 1
-    startColumn += 2;
-
-    dataUploadFolders.forEach(option => {
-                const row = startRow;
-                const column = startColumn;
-                XLSX.utils.sheet_add_aoa(worksheet, [[option.folderPath, option.folderID]], { origin: { r: row, c: column } });
-                startRow++;
-            });
-            
-    // Increment the start row for the next attribute
-    startRow = 1
-    startColumn += 2;
-
-    // Add the worksheet to the workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'TIDP_Options');
-
-    // Convert the workbook to binary Excel data
-    const excelData = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
-
-    // Function to convert string to array buffer
-    function s2ab(s) {
-        const buf = new ArrayBuffer(s.length);
-        const view = new Uint8Array(buf);
-        for (let i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
-        return buf;
+    if (!folderArray || folderArray.length === 0) {
+        console.warn('No deliverable folders available; skipping Status / Document Classification fetch.');
+        return;
     }
 
-    // Create a Blob from the Excel data
-    const blob = new Blob([s2ab(excelData)], { type: 'application/octet-stream' });
-
-    // Create a temporary link element
-    const optionslink = document.createElement('a');
-    optionslink.href = window.URL.createObjectURL(blob);
-    optionslink.download = projectName+'_TIDP_Options.xlsx';
-    optionslink.click();
-    window.URL.revokeObjectURL(optionslink.href)
-    // Create a temporary link element
-    const TIDPlink = document.createElement('a');
-    TIDPlink.href = './TIDP_Template.xlsx';
-    //TIDPlink.download = projectName+'_TIDP_Template.xlsx';
-    TIDPlink.click();
-
-    // Clean up
-;
+    const folderID = folderArray[0].folderID;
+    const customAttributes = await getItemCustomDetails(accessTokenDataRead, folderID);
+    if (!customAttributes) {
+        console.warn('No custom attributes returned from folder', folderID);
+        return;
     }
+    console.log('Folder custom attributes:', customAttributes);
+
+    const statusAttr = customAttributes.find(a => a && a.name === 'Status');
+    const docClassAttr = customAttributes.find(a => a && a.name === 'Document Classification');
+
+    statusOptions = extractAttributeValues(statusAttr);
+    docClassificationOptions = extractAttributeValues(docClassAttr);
+
+    console.log('Status options:', statusOptions);
+    console.log('Document Classification options:', docClassificationOptions);
+}
+
+// ACC doc custom-attribute definitions can return a list-type attribute's
+// allowed values under any of `arrayValues`, `values`, or `options`, and each
+// entry can be a plain string or an object like `{value, description}`.
+// Normalise to a flat array of strings.
+function extractAttributeValues(attr) {
+    if (!attr) return [];
+    const raw = attr.arrayValues || attr.values || attr.options || [];
+    return raw.map(v => {
+        if (typeof v === 'string') return v;
+        if (v && typeof v === 'object') return v.value || v.name || v.description || '';
+        return String(v);
+    }).filter(Boolean);
+}
+
+// Convert a 1-indexed column number to its Excel letter (1 -> A, 27 -> AA).
+function colNumToLetters(n) {
+    let s = '';
+    while (n > 0) {
+        const m = (n - 1) % 26;
+        s = String.fromCharCode(65 + m) + s;
+        n = Math.floor((n - 1) / 26);
+    }
+    return s;
+}
+
+function escapeXml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
+// Resolve the file path for a named worksheet inside an .xlsx zip. The
+// sheetN.xml number does NOT match tab order — Excel assigns it when the
+// sheet is created and never re-numbers, so we have to look up the rId in
+// xl/workbook.xml and follow it through xl/_rels/workbook.xml.rels.
+async function findSheetPathByName(zip, sheetName) {
+    const wbXml = await zip.file('xl/workbook.xml').async('string');
+    const relsXml = await zip.file('xl/_rels/workbook.xml.rels').async('string');
+
+    // Escape the name for regex use, and allow either attribute order on the <sheet> element.
+    const escName = sheetName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const sheetMatch =
+        wbXml.match(new RegExp(`<sheet[^>]*name="${escName}"[^>]*r:id="(rId\\d+)"`)) ||
+        wbXml.match(new RegExp(`<sheet[^>]*r:id="(rId\\d+)"[^>]*name="${escName}"`));
+    if (!sheetMatch) {
+        throw new Error(`Could not find "${sheetName}" in workbook.xml`);
+    }
+    const rId = sheetMatch[1];
+
+    const relMatch = relsXml.match(new RegExp(
+        `<Relationship[^>]*Id="${rId}"[^>]*Target="([^"]+)"`
+    )) || relsXml.match(new RegExp(
+        `<Relationship[^>]*Target="([^"]+)"[^>]*Id="${rId}"`
+    ));
+    if (!relMatch) {
+        throw new Error(`Could not resolve relationship ${rId} for sheet "${sheetName}"`);
+    }
+
+    // Sheet relationship targets are relative to the xl/ folder.
+    return 'xl/' + relMatch[1];
+}
+
+async function convertToExcelTable(dataNamingStandard, dataTemplates, dataUploadFolders, statusValues, docClassValues) {
+    // Open TIDP_Template_V2.xlsx as a zip and replace ONLY the <sheetData> block
+    // inside the Dropdown list sheet. Every other file in the archive — including
+    // the TIDP sheet's Table, formulas, calcChain and conditional formatting —
+    // is left byte-identical. This avoids the corruption that happens when
+    // round-tripping the workbook through SheetJS or ExcelJS.
+    const templateResp = await fetch('./TIDP_Template_V2.xlsx');
+    if (!templateResp.ok) {
+        throw new Error('Failed to load TIDP_Template_V2.xlsx (HTTP ' + templateResp.status + ')');
+    }
+    const templateBuf = await templateResp.arrayBuffer();
+
+    const zip = await JSZip.loadAsync(templateBuf);
+    const sheetPath = await findSheetPathByName(zip, 'Dropdown list');
+    const sheetFile = zip.file(sheetPath);
+    if (!sheetFile) {
+        throw new Error('Resolved sheet path ' + sheetPath + ' not present in workbook.');
+    }
+    console.log('Writing dropdown data into', sheetPath);
+    let sheetXml = await sheetFile.async('string');
+
+    // Detect the style index already applied to the empty cells in this sheet
+    // so written values inherit the same look as the surrounding template.
+    // Falls back to no style attribute if the sheet has no styled empty cell.
+    const styleMatch = sheetXml.match(/<c r="A1"[^>]*\s+s="(\d+)"/);
+    const cellStyleAttr = styleMatch ? ` s="${styleMatch[1]}"` : '';
+    if (!styleMatch) {
+        console.warn('Could not detect empty-cell style on Dropdown list — written values will use default formatting.');
+    }
+
+    // V2 Dropdown list column layout (positions referenced by the template's
+    // data validations):
+    //   A,B   = Project PIN value/description
+    //   C,D   = Originator value/description
+    //   E,F   = Functional Breakdown value/description
+    //   G,H   = Spatial Breakdown value/description
+    //   I,J   = Form value/description
+    //   K,L   = Discipline value/description
+    //   M     = Document Classification (replaced V1's Paper Size)
+    //   N     = Status                  (replaced V1's Scale)
+    //   O,P   = Template Name + ACC ID
+    //   Q,R   = Upload Folder Path + ACC ID
+    const columns = [];
+
+    dataNamingStandard.forEach(obj => {
+        if (obj.name === 'Number') return;
+        columns.push({ header: `${obj.name} Value`,       values: obj.options.map(o => o.value) });
+        columns.push({ header: `${obj.name} Description`, values: obj.options.map(o => o.description) });
+    });
+    columns.push({ header: 'Document Classification', values: docClassValues || [] });
+    columns.push({ header: 'Status',                   values: statusValues   || [] });
+    columns.push({ header: 'Template Name',            values: dataTemplates.map(t => t.templateName) });
+    columns.push({ header: 'Template ACC ID',          values: dataTemplates.map(t => t.templateID) });
+    columns.push({ header: 'Upload Folders Name',      values: dataUploadFolders.map(f => f.folderPath) });
+    columns.push({ header: 'Upload Folder ACC ID',     values: dataUploadFolders.map(f => f.folderID) });
+
+    // Emit one <row> per row containing only the cells that actually have a
+    // value. Cells inherit cellStyleAttr (detected above from A1 of the
+    // existing template) so written values match the surrounding formatting.
+    const maxValueRows = columns.reduce((m, c) => Math.max(m, c.values.length), 0);
+    const rowsXml = [];
+    for (let r = 1; r <= 1 + maxValueRows; r++) {
+        const cells = [];
+        for (let c = 0; c < columns.length; c++) {
+            const val = r === 1 ? columns[c].header : columns[c].values[r - 2];
+            if (val === undefined || val === null || val === '') continue;
+            const ref = colNumToLetters(c + 1) + r;
+            cells.push(`<c r="${ref}"${cellStyleAttr} t="inlineStr"><is><t xml:space="preserve">${escapeXml(val)}</t></is></c>`);
+        }
+        if (cells.length > 0) {
+            rowsXml.push(`<row r="${r}">${cells.join('')}</row>`);
+        }
+    }
+    const newSheetData = `<sheetData>${rowsXml.join('')}</sheetData>`;
+
+    // Replace the existing <sheetData>...</sheetData> block. Everything
+    // outside it (cols, dataValidations, pageSetup, headerFooter, etc.)
+    // stays exactly as the template defined it.
+    const sheetDataRegex = /<sheetData[\s\S]*?<\/sheetData>/;
+    if (!sheetDataRegex.test(sheetXml)) {
+        throw new Error('Could not locate <sheetData> in ' + sheetPath);
+    }
+    sheetXml = sheetXml.replace(sheetDataRegex, newSheetData);
+
+    zip.file(sheetPath, sheetXml);
+
+    const outBuf = await zip.generateAsync({
+        type: 'arraybuffer',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 },
+    });
+    const blob = new Blob([outBuf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = projectName + '_TIDP.xlsx';
+    link.click();
+    window.URL.revokeObjectURL(link.href);
+}
