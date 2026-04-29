@@ -1,5 +1,5 @@
 const appName = "Forma TIDP Uploader";
-const appVersion = "v1.5.0";
+const appVersion = "v1.5.1";
 
 let projectID;
 let projectName;
