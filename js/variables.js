@@ -1,5 +1,5 @@
 const appName = "Forma TIDP Uploader";
-const appVersion = "v1.5.1";
+const appVersion = "v1.5.2";
 
 let projectID;
 let projectName;
@@ -8,6 +8,10 @@ const hubID = "b.24d2d632-e01b-4ca0-b988-385be827cb04"
 const account_id = "24d2d632-e01b-4ca0-b988-385be827cb04"
 const bucketKey = "wip.dm.emea.2"
 const defaultFolder = "urn:adsk.wipemea:fs.folder:co.l7DHLbVaRl-XxgXi8QYFZw" // KELTBRAY - WIP Folder
+// PKCE public client ID for the Autodesk APS app. Safe to ship in the
+// browser — PKCE replaces the client secret entirely with a per-flow
+// verifier/challenge pair, so there is no shared secret to protect.
+const apsClientId = "rIZ4T6uq2qbVGsBucgGz8zwSPPrENzupOQGkO9ii01U4nNT0"
 let templateFolderID
 let selectedOptionStartType
 let uploadFileList

@@ -1,4 +1,4 @@
-# ACC TIDP Creator/Uploader — Feedback & Improvements Backlog
+# Forma TIDP Creator/Uploader — Feedback & Improvements Backlog
 
 Living list of issues, fixes, and improvements. Items are grouped by category, not priority — a `[P0]`/`[P1]`/`[P2]` tag on each marks suggested priority. `[DONE]` marks items already shipped in the current branch.
 
@@ -12,6 +12,12 @@ Living list of issues, fixes, and improvements. Items are grouped by category, n
 - **[DONE] Project dropdown empty on first load** — added a `loginReady` promise resolved only after `getUserDetailsFill()` completes; `gatherArrays()` awaits it before calling `listProjects()`. Also made `checkLogin` actually `await refreshToken()` and made the OAuth `.then` callbacks await `getUserDetailsFill()` so userID is guaranteed to be in sessionStorage before the project list fetch runs. (`js/variables.js`, `js/login.js`, `js/getACCData.js`)
 - **[DONE] Single-file TIDP generation** — `convertToExcelTable` now fetches the static template, opens it as a ZIP via JSZip, and surgically replaces only the `<sheetData>` block inside `xl/worksheets/sheet3.xml` (the Dropdown list sheet). Every other file in the archive — including the TIDP sheet's Excel Table, conditional formatting, calcChain, drawings, styles, and shared strings — stays byte-identical. Downloads one merged `<projectName>_TIDP.xlsx`. Initial attempts via SheetJS round-trip (lost styles) and ExcelJS round-trip (corrupted the TIDP sheet's Table and produced a "we found a problem with some content" repair dialog) were both replaced by this surgical approach. (`index.html`, `js/getACCData.js`)
 - **[DONE] V2 template support — Status & Document Classification + column renames** — fetch path moved to `TIDP_Template_V2.xlsx`. Dropdown list layout now M = Document Classification, N = Status, O–P = Templates, Q–R = Folders (Paper Size and Scale columns dropped). Status and Document Classification options pulled at TIDP-generate time from the ACC docs custom-attribute-definitions endpoint (first deliverable folder). Upload mapping rewritten: `Title Line` → ACC `Title Line 1`, `File Description` → ACC `File Description`, `Status` → ACC `Status`, `Document Classification` → ACC `Document Classification`. Blank cells fall back to placeholder defaults (Title Line → IIA filename, File Description → `"TIDP Placeholder File"`, Status / Document Classification → first allowed value from the project). Revision still hardcoded at `P01.01`. Project Stage / Paper Size / Scale attributes are no longer set. (`index.html`, `js/getACCData.js`, `js/uploadData.js`)
+- **[DONE] V2 parser fix** — Excel-side parser was hardcoded to read headers from row 10 (V1 layout). Now reads from row 1 across A:P, matching V2's table position. (`js/extractData.js`)
+- **[DONE] Pre-upload row-level validation** — every row is checked before any API calls. Mandatory: `Title Line`, `Placeholder Template`, `Target Folder`, and a complete IIA (all 7 components — Project PIN, Originator, Functional Breakdown, Spatial Breakdown, Form, Discipline, Number). Recommended: `File Description`, `Status`, `Document Classification` (warning, defaults applied). Errors block the upload entirely. (`js/uploadData.js`)
+- **[DONE] Console-style upload log panel** — scrollable, colour-coded, timestamped panel under the upload buttons surfaces validation issues and per-row upload outcomes inline rather than burying them in the browser console. Includes a Clear button. Persists max-height (260px) with overflow scrolling. (`index.html`, `assets/css/main.css`, `js/uploadData.js`)
+- **[DONE] Two-stage validate → confirm flow** — `Validate TIDP` button runs validation only and reveals the `Confirm Upload to ACC` button. Confirm is visible-but-disabled by default with a tooltip explaining why; only enables when validation passes. Both buttons lock during the upload to prevent users from kicking off a second pass. File re-upload or any new validation pass resets the gate. (`index.html`, `js/uploadData.js`, `js/extractData.js`)
+- **[DONE] Robust template editing — dynamic sheet path & style** — sheet path for the Dropdown list is now resolved via `xl/workbook.xml` + `xl/_rels/workbook.xml.rels` instead of hardcoded `sheet3.xml`, so adding/removing/rearranging tabs in the template no longer breaks generation. Empty-cell style index is also detected from the existing A1 cell rather than hardcoded, so restyling the Dropdown list sheet won't break formatting either. (`js/getACCData.js`)
+- **[DONE] PKCE auth — client secret removed from the browser** — replaced confidential-client OAuth (with hardcoded `Basic client_id:secret`) with PKCE (RFC 7636). `signin()` now generates a 64-byte verifier + SHA-256 S256 challenge per flow; the verifier is held in sessionStorage across the redirect and submitted with the code at `/token`. `getAuthorisation` and `refreshToken` no longer send any `Authorization` header — just `client_id` (now `apsClientId` in `variables.js`) and the verifier in the body. The verifier is wiped after a successful exchange so a leaked code can't be replayed. Restored the await chain in `checkLogin` → `refreshToken` → `getUserDetailsFill` so `loginReady` doesn't resolve until userID is in sessionStorage. **Existing users have a one-time re-login** since refresh tokens are scoped to the previous client ID. (`js/variables.js`, `js/login.js`)
 
 ---
 
@@ -19,11 +25,9 @@ Living list of issues, fixes, and improvements. Items are grouped by category, n
 
 These break or threaten production usage.
 
-- **[P0] Client secret exposed in browser** — `js/login.js:117`, `js/login.js:173` ship a hardcoded `Basic` auth header that base64-decodes to `client_id:client_secret`. Anyone with devtools can extract it.
-  - **Recommended fix: PKCE.** Pure code change. Requires enabling PKCE on the Autodesk app in the APS console first, otherwise login breaks.
-  - **Alternative: extend the existing Power Automate proxy** (`js/getACCData.js:205`) to also handle the user-OAuth code exchange and refresh, mirroring the pattern already in use for app tokens.
+- **[P1] Refresh token still in `localStorage`** — now that PKCE is in place there is no shared secret in the browser, so this is significantly less critical, but a refresh token persisted in `localStorage` is still XSS-readable. Moving to `sessionStorage` would clear on tab close (UX cost: re-login per tab) and reduce the blast radius further. Decide: keep as-is for UX, or move for security.
 
-- **[P0] Refresh token in `localStorage`** — combined with the secret above, an XSS gives an attacker permanent ACC access on the user's behalf. Tied to the auth refactor above; with PKCE, the refresh token can move to `sessionStorage` (cleared on tab close).
+- **[P2] OAuth `state` parameter is hardcoded** (`js/login.js:90` — `state: "12321321"`). For full CSRF protection it should be a random per-flow token stored in sessionStorage and verified on redirect.
 
 ---
 
@@ -31,19 +35,14 @@ These break or threaten production usage.
 
 User-facing wins. None are show-stoppers but all reduce friction or risk.
 
-- **[P1] Dry-run / confirmation screen before uploading**
-  - For a tool that creates hundreds of files, currently one click and uploads start firing.
-  - Show: row count, target folder, parsed preview, count of any rows skipped due to validation. Confirm before running.
-
-- **[P1] Validate the TIDP client-side before uploading**
-  - Catch missing required columns, blank required cells, invalid scale/paper-size/status/classification values, and duplicate filenames *before* any API calls.
-  - Much faster feedback than discovering it row-by-row mid-upload.
-
 - **[P2] Partial-failure recovery export**
   - When some uploads fail, give the user a downloadable CSV/XLSX of just the failed rows so they can fix and re-run without creating duplicates.
 
 - **[P2] Progress bar should reflect failures**
   - Currently increments unconditionally even when an item errored. Consider colouring failed segments differently or showing `succeeded/total` numerically next to the bar.
+
+- **[P2] Duplicate filename / IIA detection**
+  - Validation currently checks each row in isolation. If two rows produce the same Information Identification value (and therefore the same filename), only one will land in ACC and the other will fail or overwrite. Catch this in the validation pass and flag both rows.
 
 ---
 
@@ -81,6 +80,8 @@ Lower priority but high-leverage if the tool is going to keep growing.
 
 ## Suggested order of attack
 
-1. **First sprint (unblock production):** P0 Forma fields (Status + Document Classification) → P0 first-load dropdown bug → P0 auth refactor (decide PKCE vs proxy first).
-2. **Second sprint (UX wins):** single-file TIDP generation → client-side validation → dry-run preview.
-3. **Third sprint (cleanup):** duplicate scripts, jQuery removal, lift hardcoded values to config, consider build step.
+1. **Auth hardening (P0)** — client secret + refresh-token in localStorage. Single biggest outstanding risk; needs your call on PKCE vs Power Automate proxy.
+2. **Hardcoded revision/description (P1)** — quick decision: keep as named constants or pull from new TIDP columns?
+3. **Cleanup pass (P2)** — duplicate `<script>` tags, drop jQuery, drag-drop xlsx validation, swallowed `.catch` errors. All small; could land as one bundled PR.
+4. **Polish (P2)** — duplicate IIA detection, partial-failure CSV export, progress bar colouring failures, hardcoded tenant.
+5. **Architecture (P2)** — globals refactor + build step. Big, do when the codebase next needs significant changes.
