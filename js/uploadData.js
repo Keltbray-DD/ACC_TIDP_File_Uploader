@@ -344,7 +344,9 @@ async function postCustomItemDetails(accessTokenDataCreate, fileURN, fields) {
         bodyData.push({ id: titleline1ID.id, value: titleLine });
     }
     if (revisionCodeID) {
-        // Revision is intentionally hardcoded: every placeholder ships at P01.01.
+        // Every TIDP placeholder ships at P01.01 by Aureos convention; the
+        // value is intentionally not exposed via a TIDP column (decision in
+        // feedback.md). Change it here if the convention ever shifts.
         bodyData.push({ id: revisionCodeID.id, value: 'P01.01' });
     }
     if (descriptionID) {

@@ -94,7 +94,17 @@
   async function signin() {
     const verifier = generateCodeVerifier();
     const challenge = await generateCodeChallenge(verifier);
+    // Random per-flow state. Autodesk echoes it back on redirect; we verify
+    // it matches what we sent before redeeming the code, which prevents an
+    // attacker from tricking a logged-in user into redeeming an attacker-
+    // controlled `?code=` (CSRF). Reuses the same base64url encoding as the
+    // PKCE verifier helper.
+    const stateBytes = new Uint8Array(16);
+    crypto.getRandomValues(stateBytes);
+    const state = _pkceBase64Url(stateBytes);
+
     sessionStorage.setItem("pkce_verifier", verifier);
+    sessionStorage.setItem("oauth_state", state);
 
     const params = new URLSearchParams({
       response_type: "code",
@@ -102,7 +112,7 @@
       redirect_uri: toolURL,
       scope: "data:read data:write data:create",
       prompt: "login",
-      state: "12321321",
+      state: state,
       code_challenge: challenge,
       code_challenge_method: "S256",
     });
@@ -113,6 +123,7 @@
   }
   async function checkLogin() {
     var codeParam = getParameterByName("code");
+    var stateParam = getParameterByName("state");
     var localRefreshToken = localStorage.getItem("user_refresh_token");
 
     if (codeParam !== null) {
@@ -120,6 +131,18 @@
       // redeeming this over attempting a refresh. A redirect with a fresh
       // code typically means the user just (re-)logged in, in which case
       // any existing refresh_token has been superseded or invalidated.
+      const expectedState = sessionStorage.getItem("oauth_state");
+      if (!expectedState || stateParam !== expectedState) {
+        // State mismatch = CSRF attempt or browser state lost between
+        // authorize and redirect. Refuse to redeem and restart cleanly.
+        console.warn("OAuth state mismatch — refusing to redeem code and restarting login.");
+        sessionStorage.removeItem("oauth_state");
+        sessionStorage.removeItem("pkce_verifier");
+        clearUrlParameters();
+        await signin();
+        return;
+      }
+      sessionStorage.removeItem("oauth_state");
       await getAuthorisation(codeParam);
     } else if (localRefreshToken && localRefreshToken !== "blank") {
       // Have a stored refresh token from a previous session — try silent refresh.

@@ -32,6 +32,17 @@ function handleFileSelect(event) {
     }
 
 function handleFile(file) {
+    // Reject anything that isn't an .xlsx. The <input accept=".xlsx"> only
+    // filters the OS file picker; drag-and-drop bypasses it entirely, so we
+    // have to check here too. SheetJS will read .xls / .csv etc. but the
+    // upload pipeline assumes the V2 TIDP table layout, so non-.xlsx drops
+    // would silently produce broken row data.
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'xlsx') {
+        alert(`This tool only accepts .xlsx files. You dropped a .${ext} file.`);
+        return;
+    }
+
     // Display file name
         const fileSizeInBytes = file.size;
         const fileSizeInKb = fileSizeInBytes / 1024;
@@ -43,7 +54,7 @@ function handleFile(file) {
     const sizeP = document.createElement('p');
     sizeP.textContent = `Size: ${fileSizeText}`;
     fileInfoEl.append(nameP, sizeP);
-    fileExtension = file.name.split('.').pop();
+    fileExtension = ext;
     // Add 'uploaded' class to indicate file upload
     document.getElementById('drop-area').classList.add('uploaded');
     console.log(file)
@@ -115,10 +126,10 @@ function extractDataFromExcel(event) {
 
 async function setProjectDetails(){
     if(selectedOptionStartType === "new"){
-        projectID = $("#input_project_new").val()
-    } 
+        projectID = document.getElementById("input_project_new").value;
+    }
     if(selectedOptionStartType === "existing"){
-        projectID = $("#input_project_existing").val()
+        projectID = document.getElementById("input_project_existing").value;
     }
 
     data = ProjectList.filter(item => {return projectID === item.ProjectID})

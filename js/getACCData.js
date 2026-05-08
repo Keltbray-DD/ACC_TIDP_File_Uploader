@@ -12,6 +12,24 @@ let statusOptions = [];
 let docClassificationOptions = [];
 
 
+// Updates the state of one step in the loading-screen checklist. State is
+// one of "pending", "active", "done" — see CSS in main.css for visuals.
+// `label` overrides the displayed text if provided (e.g. "Loading projects (cached)").
+function setLoadingStep(stepId, state, label) {
+    const ul = document.getElementById('loadingSteps');
+    if (!ul) return;
+    const li = ul.querySelector(`[data-step="${stepId}"]`);
+    if (!li) return;
+    li.classList.remove('pending', 'active', 'done');
+    li.classList.add(state);
+    const icon = li.querySelector('.step-icon');
+    if (icon) icon.textContent = state === 'done' ? '✓' : '';
+    if (label !== undefined) {
+        const labelEl = li.querySelector('.step-label');
+        if (labelEl) labelEl.textContent = label;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     loadingScreen = document.getElementById('loadingScreen');
     // Show the loading screen
@@ -24,17 +42,21 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingScreen.style.display = 'none';
     }
 
-    // Simulate gathering arrays with a delay
     async function gatherArrays() {
+        showLoadingScreen();
 
-        showLoadingScreen(); // Show loading screen before gathering arrays
-        // Wait until login is fully complete and userID is in sessionStorage,
-        // otherwise fetchProjects() POSTs a null userID and the dropdown comes back empty.
+        // Step 1: authentication. loginReady covers token exchange + user
+        // details fetch (so userID is in sessionStorage by the time it resolves).
+        setLoadingStep('auth', 'active');
         await loginReady;
-        await listProjects()
+        setLoadingStep('auth', 'done');
+
+        // Step 2: project list. fetchProjects() needs the userID set above.
+        setLoadingStep('projects', 'active');
+        await listProjects();
+        setLoadingStep('projects', 'done');
 
         hideLoadingScreen();
-
     }
     gatherArrays();
     })

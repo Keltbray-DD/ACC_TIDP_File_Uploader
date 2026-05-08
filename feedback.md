@@ -17,17 +17,16 @@ Living list of issues, fixes, and improvements. Items are grouped by category, n
 - **[DONE] Console-style upload log panel** — scrollable, colour-coded, timestamped panel under the upload buttons surfaces validation issues and per-row upload outcomes inline rather than burying them in the browser console. Includes a Clear button. Persists max-height (260px) with overflow scrolling. (`index.html`, `assets/css/main.css`, `js/uploadData.js`)
 - **[DONE] Two-stage validate → confirm flow** — `Validate TIDP` button runs validation only and reveals the `Confirm Upload to ACC` button. Confirm is visible-but-disabled by default with a tooltip explaining why; only enables when validation passes. Both buttons lock during the upload to prevent users from kicking off a second pass. File re-upload or any new validation pass resets the gate. (`index.html`, `js/uploadData.js`, `js/extractData.js`)
 - **[DONE] Robust template editing — dynamic sheet path & style** — sheet path for the Dropdown list is now resolved via `xl/workbook.xml` + `xl/_rels/workbook.xml.rels` instead of hardcoded `sheet3.xml`, so adding/removing/rearranging tabs in the template no longer breaks generation. Empty-cell style index is also detected from the existing A1 cell rather than hardcoded, so restyling the Dropdown list sheet won't break formatting either. (`js/getACCData.js`)
-- **[DONE] PKCE auth — client secret removed from the browser** — replaced confidential-client OAuth (with hardcoded `Basic client_id:secret`) with PKCE (RFC 7636). `signin()` now generates a 64-byte verifier + SHA-256 S256 challenge per flow; the verifier is held in sessionStorage across the redirect and submitted with the code at `/token`. `getAuthorisation` and `refreshToken` no longer send any `Authorization` header — just `client_id` (now `apsClientId` in `variables.js`) and the verifier in the body. The verifier is wiped after a successful exchange so a leaked code can't be replayed. Restored the await chain in `checkLogin` → `refreshToken` → `getUserDetailsFill` so `loginReady` doesn't resolve until userID is in sessionStorage. **Existing users have a one-time re-login** since refresh tokens are scoped to the previous client ID. (`js/variables.js`, `js/login.js`)
+- **[DONE] PKCE auth — client secret removed from the browser** — replaced confidential-client OAuth (with hardcoded `Basic client_id:secret`) with PKCE (RFC 7636). `signin()` now generates a 64-byte verifier + SHA-256 S256 challenge per flow; the verifier is held in sessionStorage across the redirect and submitted with the code at `/token`. `getAuthorisation` and `refreshToken` no longer send any `Authorization` header — just `client_id` (now `apsClientId` in `variables.js`) and the verifier in the body. The verifier is wiped after a successful exchange so a leaked code can't be replayed. Restored the await chain in `checkLogin` → `refreshToken` → `getUserDetailsFill` so `loginReady` doesn't resolve until userID is in sessionStorage. Both `/token` callers now check `response.ok` before parsing JSON and wipe + reload on any non-2xx so a stale or wrong-client refresh token can't poison the session. **Existing users have a one-time re-login** since refresh tokens are scoped to the previous client ID. (`js/variables.js`, `js/login.js`)
+- **[DONE] Cleanup pass** — removed two duplicate `<script>` tags for jQuery and two for PapaParse from `index.html`; PapaParse was never called in any JS file and jQuery was used in only two `$("#id").val()` calls in `extractData.js`, both replaced with vanilla `document.getElementById(...).value`. `.xlsx` file type is now enforced at the JS layer in `handleFile()` so drag-drop can't bypass the `<input accept=".xlsx">`. OAuth `state` is now a random 16-byte base64url token per flow, stored in sessionStorage and verified on redirect; mismatches restart the OAuth flow rather than redeem an attacker-controlled code. (`index.html`, `js/extractData.js`, `js/login.js`)
+- **[DECIDED — keep `localStorage`]** Refresh token storage. Now that PKCE has removed the shared secret, the marginal XSS risk of `localStorage` is small for an internal tool with controlled JS surface, while the UX cost of `sessionStorage` (re-login per tab + on browser restart) is constant. Keeping current behaviour.
+- **[DECIDED — keep hardcoded]** Placeholder Revision (`P01.01`) and File Description fallback (`TIDP Placeholder File`). Validation now warns when these cells are blank, so the fallback is rarely hit; not worth the churn of lifting to constants or wiring to new TIDP columns. Values stay inline in `js/uploadData.js`.
 
 ---
 
 ## 2. Blocking / must-fix
 
-These break or threaten production usage.
-
-- **[P1] Refresh token still in `localStorage`** — now that PKCE is in place there is no shared secret in the browser, so this is significantly less critical, but a refresh token persisted in `localStorage` is still XSS-readable. Moving to `sessionStorage` would clear on tab close (UX cost: re-login per tab) and reduce the blast radius further. Decide: keep as-is for UX, or move for security.
-
-- **[P2] OAuth `state` parameter is hardcoded** (`js/login.js:90` — `state: "12321321"`). For full CSRF protection it should be a random per-flow token stored in sessionStorage and verified on redirect.
+_(Empty — all P0/P1 items resolved.)_
 
 ---
 
@@ -63,17 +62,14 @@ User-facing wins. None are show-stoppers but all reduce friction or risk.
 Lower priority but high-leverage if the tool is going to keep growing.
 
 - **[P2] ~50 mutable globals in `js/variables.js`** — every file reads and writes shared state. Wrap into a single state object or split into modules; would have made the upload-loop fix far smaller.
-- **[P2] Duplicate `<script>` tags** — `index.html` loads PapaParse twice (lines 15, 22) and jQuery twice (lines 17, 20). Remove duplicates.
-- **[P2] Drop jQuery** — barely used; codebase is otherwise vanilla DOM. Saves a dependency and ~90 KB.
 - **[P2] Add a build step + linter** — minimal Vite + ESLint setup would have caught the upload-loop bug, the duplicate scripts, and the broken `sessionStorage` write automatically.
-- **[P2] Swallowed errors elsewhere** — most API helpers still end with `.catch(error => console.error(...))`, returning `undefined` instead of propagating. The upload path now handles this defensively, but other call sites (e.g. token fetch, project list) still hide failures from the UI.
+- **[P2] Swallowed errors elsewhere** — most API helpers still end with `.catch(error => console.error(...))`, returning `undefined` instead of propagating. The upload and token paths now handle this defensively, but other call sites (e.g. project list, folder list, naming standard fetch) still hide failures from the UI.
 
 ---
 
 ## 6. Smaller wins
 
 - **[P2] Feedback widget assets are loaded inside `<body>`** (`index.html:110-112`) — move CSS/JS to `<head>` for consistency.
-- **[P2] No `.xlsx` validation on drag-drop** — the `accept=".xlsx"` attribute isn't enforced for dropped files; `js/extractData.js` will try to parse anything.
 - **[P2] Version string hand-edited** — `js/variables.js:2`. A one-line `npm version` script would keep it in sync with git tags.
 
 ---
